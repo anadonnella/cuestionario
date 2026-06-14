@@ -117,15 +117,6 @@ body {
 .toast.success { background: #065F46; }
 .toast.error { background: #991B1B; }
 /* SCRIPT URL BANNER */
-.url-banner {
-  background: #FEF3C7; border: 1px solid #F0A500; border-radius: 10px;
-  padding: 14px 16px; margin-bottom: 20px; font-size: 13px;
-}
-.url-banner strong { color: #92400E; display: block; margin-bottom: 6px; }
-.url-banner input {
-  width: 100%; padding: 7px 10px; border: 1px solid #E2E8F0;
-  border-radius: 6px; font-size: 12px; font-family: monospace; color: #0D1F3C;
-}
 /* NAV */
 .nav { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; margin-top: 24px; border-top: 1px solid #F1F5F9; }
 .step-dots { display: flex; gap: 6px; }
@@ -168,8 +159,7 @@ body {
 }
 @media print {
   body { background: white; padding: 0; }
-  .url-banner, .nav, .btn-send, .btn-print, .btn-reset { display: none !important; }
-  .card { box-shadow: none; border-radius: 0; }
+    .card { box-shadow: none; border-radius: 0; }
   .sec { display: none !important; }
   #sec-5 { display: block !important; }
 }
@@ -190,15 +180,6 @@ body {
   </div>
 
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:20%"></div></div>
-
-  <!-- ── BANNER URL ── -->
-  <div class="url-banner" id="url-banner">
-    <strong>⚙ Paso de configuración — solo la primera vez</strong>
-    Pega aquí la URL de tu Google Apps Script (la obtienes al hacer clic en "Implementar" en Apps Script):
-    <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/XXXXX/exec"
-      oninput="guardarURL(this.value)">
-  </div>
-
   <!-- SEC A -->
   <div class="sec active" id="sec-0">
     <div class="sec-lbl">A · Identificación de la cámara</div>
@@ -325,8 +306,7 @@ body {
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────
-// La URL se guarda en localStorage para no tener que ingresarla cada vez
-let SCRIPT_URL = localStorage.getItem('diagnostico_script_url') || '';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwwjyO4zl9ByZuldjpJN5eGlDA2E4zD_o630kfy8pKM0lti-0t0oEI-C1GQFtDyVIG/exec';
 
 const TOTAL = 5;
 let cur = 0;
@@ -357,20 +337,12 @@ const PRIOR_OPTS = [
 
 // ── INIT ──────────────────────────────────────────────────────────
 function init() {
-  // Mostrar URL guardada si existe
-  if (SCRIPT_URL) {
-    document.getElementById('script-url').value = SCRIPT_URL;
-  }
   buildProcTable();
   buildIdxGrid();
   buildPriorGrid();
   buildDots();
 }
 
-function guardarURL(val) {
-  SCRIPT_URL = val.trim();
-  localStorage.setItem('diagnostico_script_url', SCRIPT_URL);
-}
 
 // ── BUILD SECTIONS ────────────────────────────────────────────────
 function buildProcTable() {
@@ -595,11 +567,6 @@ function recopilarDatos() {
 }
 
 async function enviarAlSheet() {
-  if (!SCRIPT_URL) {
-    showToast('⚠ Primero pega la URL de tu Apps Script en el banner de arriba', 'error');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
   const btn = document.getElementById('btn-send');
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando...';
@@ -640,7 +607,7 @@ function reiniciar() {
   document.querySelectorAll('.idx-val').forEach(v=>v.textContent='—');
   document.querySelectorAll('.prior-item').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('input,select,textarea').forEach(el=>{
-    if(el.id !== 'script-url') el.value='';
+    el.value='';
   });
   const btn = document.getElementById('btn-send');
   btn.disabled = false;
