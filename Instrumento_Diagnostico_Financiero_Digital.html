@@ -281,7 +281,7 @@ body {
     <div class="sec-lbl">Resumen del diagnóstico</div>
     <div id="result-body"></div>
     <button class="btn-send" id="btn-send" onclick="enviarAlSheet()">
-      <i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"
+      <i class="ti ti-send"></i> Enviar
     </button>
     <button class="btn-print" onclick="window.print()">
       <i class="ti ti-printer" style="font-size:14px;"></i> Imprimir / Guardar como PDF
@@ -306,7 +306,7 @@ body {
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwwjyO4zl9ByZuldjpJN5eGlDA2E4zD_o630kfy8pKM0lti-0t0oEI-C1GQFtDyVIG/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZzY8D35RF3OHIsDRUOBpboZ8HZEEHbZy8cCP6FjNLjfyOaW8yM_xIsh1XKkeoN-Uj/exec';
 
 const TOTAL = 5;
 let cur = 0;
@@ -566,27 +566,52 @@ function recopilarDatos() {
   };
 }
 
-async function enviarAlSheet() {
+function enviarAlSheet() {
   const btn = document.getElementById('btn-send');
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando...';
+
   try {
     const datos = recopilarDatos();
-    // Apps Script requiere no-cors porque viene de un HTML local
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos)
-    });
-    // no-cors no devuelve respuesta legible — si no lanzó error, asumimos éxito
-    showToast('✓ Diagnóstico enviado al Sheet correctamente', 'success');
-    btn.innerHTML = '<i class="ti ti-check"></i> ¡Enviado correctamente!';
-    btn.style.background = '#065F46';
+
+    // Método formulario — único que funciona sin bloqueo CORS desde HTML externo
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = SCRIPT_URL;
+    form.target = 'hidden-iframe';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(datos);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // iframe oculto para absorber la respuesta sin redirigir la página
+    let iframe = document.getElementById('hidden-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.name = 'hidden-iframe';
+      iframe.id = 'hidden-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    form.submit();
+    document.body.removeChild(form);
+
+    // Esperar 2s y confirmar éxito
+    setTimeout(() => {
+      showToast('✓ Diagnóstico enviado correctamente', 'success');
+      btn.innerHTML = '<i class="ti ti-check"></i> ¡Enviado!';
+      btn.style.background = '#065F46';
+    }, 2000);
+
   } catch (err) {
-    showToast('Error al enviar. Revisa la URL del script.', 'error');
+    showToast('Error al enviar. Verifica tu conexión.', 'error');
     btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"';
+    btn.innerHTML = '<i class="ti ti-send"></i> Enviar';
   }
 }
 
@@ -612,7 +637,7 @@ function reiniciar() {
   const btn = document.getElementById('btn-send');
   btn.disabled = false;
   btn.style.background = '';
-  btn.innerHTML = '<i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"';
+  btn.innerHTML = '<i class="ti ti-send"></i> Enviar';
   buildProcTable(); buildIdxGrid(); buildPriorGrid();
   showSec(0);
   document.getElementById('nav-bar').style.display = 'flex';
