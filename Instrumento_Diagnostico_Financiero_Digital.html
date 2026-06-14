@@ -571,48 +571,24 @@ function enviarAlSheet() {
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando...';
 
-  try {
-    const datos = recopilarDatos();
+  const datos = recopilarDatos();
 
-    // Método formulario — único que funciona sin bloqueo CORS desde HTML externo
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = SCRIPT_URL;
-    form.target = 'hidden-iframe';
-    form.style.display = 'none';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify(datos);
-    form.appendChild(input);
-    document.body.appendChild(form);
-
-    // iframe oculto para absorber la respuesta sin redirigir la página
-    let iframe = document.getElementById('hidden-iframe');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.name = 'hidden-iframe';
-      iframe.id = 'hidden-iframe';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-    }
-
-    form.submit();
-    document.body.removeChild(form);
-
-    // Esperar 2s y confirmar éxito
-    setTimeout(() => {
-      showToast('✓ Diagnóstico enviado correctamente', 'success');
-      btn.innerHTML = '<i class="ti ti-check"></i> ¡Enviado!';
-      btn.style.background = '#065F46';
-    }, 2000);
-
-  } catch (err) {
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(datos)
+  })
+  .then(() => {
+    showToast('Diagnóstico enviado correctamente', 'success');
+    btn.innerHTML = '<i class="ti ti-check"><\/i> ¡Enviado!';
+    btn.style.background = '#065F46';
+  })
+  .catch(() => {
     showToast('Error al enviar. Verifica tu conexión.', 'error');
     btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-send"></i> Enviar';
-  }
+    btn.innerHTML = '<i class="ti ti-send"><\/i> Enviar';
+  });
 }
 
 function showToast(msg, type = '') {
