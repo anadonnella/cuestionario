@@ -16,6 +16,7 @@
 // ══════════════════════════════════════════════════════════════════
 
 const SHEET_NAME = "Diagnósticos";
+const SPREADSHEET_ID = "11dvBRfyQzOZRdcGx72a6ZG2KffokJqnEL3c8KQ8WFNY";
 const SHEET_HEADER = [
   "Fecha y hora",
   "Cámara",
@@ -83,7 +84,8 @@ const SHEET_HEADER = [
 // ── Punto de entrada principal ────────────────────────────────────
 function doPost(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
+    const raw = e.postData.contents || e.parameter.data || "{}";
+    const data = JSON.parse(raw);
     escribirFila(data);
     return ContentService
       .createTextOutput(JSON.stringify({ status: "ok", mensaje: "Diagnóstico registrado correctamente." }))
@@ -104,7 +106,7 @@ function doGet(e) {
 
 // ── Escribe la fila en el Sheet ───────────────────────────────────
 function escribirFila(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(SHEET_NAME);
 
   // Crear la hoja si no existe
