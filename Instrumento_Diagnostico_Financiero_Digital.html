@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Financiero Digital · Cavedatos / Bida Global</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #F0F4F8; min-height: 100vh;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 32px 16px; color: #0D1F3C;
+}
+.card {
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  width: 100%; max-width: 780px; padding: 32px 36px;
+}
+.hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hd-left { display: flex; align-items: center; gap: 12px; }
+.hd-icon { width: 42px; height: 42px; background: #E6F1FB; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.hd-icon i { font-size: 22px; color: #1565C0; }
+.hd-title { font-size: 17px; font-weight: 600; color: #0D1F3C; }
+.hd-sub { font-size: 12px; color: #64748B; margin-top: 2px; }
+.hd-counter { font-size: 12px; color: #64748B; }
+.prog-wrap { height: 4px; background: #E2E8F0; border-radius: 2px; margin: 16px 0 24px; overflow: hidden; }
+.prog-fill { height: 100%; background: #1565C0; border-radius: 2px; transition: width 0.3s; }
+.sec { display: none; }
+.sec.active { display: block; }
+.sec-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: #94A3B8; margin-bottom: 20px; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; color: #475569; margin-bottom: 6px; }
+.field input[type=text], .field input[type=number], .field select, .field textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid #E2E8F0; border-radius: 8px;
+  font-size: 14px; color: #0D1F3C; background: #fff; transition: border-color 0.15s; font-family: inherit;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: #1565C0; box-shadow: 0 0 0 3px rgba(21,101,192,0.10);
+}
+.field textarea { min-height: 80px; resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.suite-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.suite-pill {
+  padding: 6px 16px; font-size: 13px; border-radius: 20px;
+  border: 1px solid #E2E8F0; background: #fff; color: #475569; cursor: pointer; transition: all 0.15s;
+}
+.suite-pill:hover { border-color: #1565C0; color: #1565C0; }
+.suite-pill.active { background: #E6F1FB; border-color: #1565C0; color: #1565C0; font-weight: 600; }
+.proc-wrap { overflow-x: auto; margin-top: 4px; }
+.proc-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 640px; }
+.proc-table th { text-align: left; font-size: 11px; font-weight: 600; color: #94A3B8; padding: 6px 6px 10px; border-bottom: 1px solid #E2E8F0; }
+.proc-table td { padding: 6px 4px; vertical-align: top; }
+.proc-table tr:not(:last-child) td { border-bottom: 1px solid #F1F5F9; }
+.proc-table input, .proc-table select {
+  font-size: 12px; padding: 5px 7px; border: 1px solid #E2E8F0;
+  border-radius: 6px; width: 100%; background: #fff; font-family: inherit;
+}
+.proc-table input:focus, .proc-table select:focus { outline: none; border-color: #1565C0; }
+.proc-num {
+  width: 24px; height: 24px; background: #F1F5F9; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #64748B;
+}
+.idx-grid { display: flex; flex-direction: column; gap: 12px; }
+.idx-row { display: grid; grid-template-columns: 200px 1fr 50px; align-items: center; gap: 14px; }
+.idx-label { font-size: 13px; color: #475569; }
+.idx-scale { display: flex; gap: 5px; }
+.idx-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid #E2E8F0; background: #fff;
+  font-size: 12px; font-weight: 600; color: #94A3B8;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.idx-btn:hover { border-color: #1565C0; color: #1565C0; }
+.idx-btn.active { background: #1565C0; border-color: #1565C0; color: #fff; }
+.idx-val { font-size: 13px; font-weight: 600; color: #1565C0; text-align: right; }
+.prior-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.prior-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+  border: 1px solid #E2E8F0; border-radius: 10px; cursor: pointer; background: #fff; transition: all 0.15s;
+}
+.prior-item:hover { border-color: #1565C0; }
+.prior-item.active { background: #E6F1FB; border-color: #1565C0; }
+.prior-item.active .prior-text { color: #1565C0; }
+.prior-check { width: 17px; height: 17px; border: 1.5px solid #CBD5E1; border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.prior-item.active .prior-check { background: #1565C0; border-color: #1565C0; }
+.prior-chk-svg { display: none; }
+.prior-item.active .prior-chk-svg { display: block; }
+.prior-text { font-size: 12.5px; color: #475569; line-height: 1.4; }
+.alert-max { font-size: 12px; color: #B45309; margin-top: 8px; display: none; }
+.alert-max.show { display: block; }
+/* RESULT */
+.r-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.r-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.r-card h3 i { font-size: 16px; color: #1565C0; }
+.r-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+.r-table td { padding: 5px 0; vertical-align: top; }
+.r-table td:first-child { color: #64748B; width: 180px; }
+.score-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #F1F5F9; }
+.score-row:last-child { border-bottom: none; }
+.score-lbl { font-size: 12.5px; color: #475569; width: 200px; flex-shrink: 0; }
+.score-bar-wrap { flex: 1; height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+.score-bar { height: 100%; background: #1565C0; border-radius: 3px; }
+.score-num { font-size: 13px; font-weight: 600; color: #1565C0; width: 36px; text-align: right; }
+.badge-avg { display: inline-block; padding: 3px 10px; background: #E6F1FB; color: #1565C0; border-radius: 20px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+/* TOAST */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #0D1F3C; color: #fff; padding: 12px 24px; border-radius: 10px;
+  font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px; white-space: nowrap; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: #065F46; }
+.toast.error { background: #991B1B; }
+/* SCRIPT URL BANNER */
+.url-banner {
+  background: #FEF3C7; border: 1px solid #F0A500; border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 20px; font-size: 13px;
+}
+.url-banner strong { color: #92400E; display: block; margin-bottom: 6px; }
+.url-banner input {
+  width: 100%; padding: 7px 10px; border: 1px solid #E2E8F0;
+  border-radius: 6px; font-size: 12px; font-family: monospace; color: #0D1F3C;
+}
+/* NAV */
+.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; margin-top: 24px; border-top: 1px solid #F1F5F9; }
+.step-dots { display: flex; gap: 6px; }
+.step-dot { width: 7px; height: 7px; border-radius: 50%; background: #E2E8F0; transition: background 0.2s; }
+.step-dot.active { background: #1565C0; }
+.nav-btns { display: flex; gap: 10px; }
+.btn { padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid #E2E8F0; background: #fff; color: #0D1F3C; transition: all 0.15s; font-family: inherit; }
+.btn:hover { background: #F8FAFC; }
+.btn:disabled { opacity: 0.35; cursor: default; }
+.btn.primary { background: #1565C0; border-color: #1565C0; color: #fff; }
+.btn.primary:hover { background: #1251A0; }
+.btn-send {
+  width: 100%; padding: 13px; font-size: 14px; font-weight: 600;
+  background: #10B981; color: #fff; border: none; border-radius: 10px;
+  cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit; transition: background 0.15s;
+}
+.btn-send:hover { background: #059669; }
+.btn-send:disabled { background: #94A3B8; cursor: not-allowed; }
+.btn-send i { font-size: 17px; }
+.btn-print {
+  width: 100%; padding: 10px; font-size: 13px; font-weight: 500;
+  background: #1565C0; color: #fff; border: none; border-radius: 10px;
+  cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: inherit; transition: all 0.15s;
+}
+.btn-print:hover { background: #1251A0; }
+.btn-reset {
+  width: 100%; padding: 10px; font-size: 13px; font-weight: 500;
+  background: #fff; color: #475569; border: 1px solid #E2E8F0; border-radius: 10px;
+  cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: inherit; transition: all 0.15s;
+}
+.btn-reset:hover { background: #F8FAFC; }
+@media (max-width: 600px) {
+  .card { padding: 20px 16px; }
+  .row2 { grid-template-columns: 1fr; }
+  .idx-row { grid-template-columns: 1fr; gap: 6px; }
+  .prior-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  body { background: white; padding: 0; }
+  .url-banner, .nav, .btn-send, .btn-print, .btn-reset { display: none !important; }
+  .card { box-shadow: none; border-radius: 0; }
+  .sec { display: none !important; }
+  #sec-5 { display: block !important; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="hd">
+    <div class="hd-left">
+      <div class="hd-icon"><i class="ti ti-clipboard-list"></i></div>
+      <div>
+        <div class="hd-title">Diagnóstico financiero digital</div>
+        <div class="hd-sub">Programa de Finanzas Digitales para Cámaras · Cavedatos / Bida Global</div>
+      </div>
+    </div>
+    <div class="hd-counter" id="sec-counter">Sección 1 de 5</div>
+  </div>
+
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:20%"></div></div>
+
+  <!-- ── BANNER URL ── -->
+  <div class="url-banner" id="url-banner">
+    <strong>⚙ Paso de configuración — solo la primera vez</strong>
+    Pega aquí la URL de tu Google Apps Script (la obtienes al hacer clic en "Implementar" en Apps Script):
+    <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/XXXXX/exec"
+      oninput="guardarURL(this.value)">
+  </div>
+
+  <!-- SEC A -->
+  <div class="sec active" id="sec-0">
+    <div class="sec-lbl">A · Identificación de la cámara</div>
+    <div class="field"><label>Nombre de la cámara</label><input type="text" id="a-nombre" placeholder="Ej. Cámara Venezolana de Industrias Plásticas"></div>
+    <div class="row2">
+      <div class="field"><label>Sector que agremia</label><input type="text" id="a-sector" placeholder="Ej. Manufactura, Servicios..."></div>
+      <div class="field"><label>N° de empresas asociadas</label><input type="number" id="a-asociados" placeholder="0" min="0"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Personas en el área financiero-administrativa</label><input type="number" id="a-personas" placeholder="0" min="0"></div>
+      <div class="field"><label>Software / ERP actual</label><input type="text" id="a-erp" placeholder="Ej. SAINT, Profit Plus, ninguno"></div>
+    </div>
+    <div class="field">
+      <label>Suite ofimática principal</label>
+      <div class="suite-pills" id="suite-pills">
+        <button class="suite-pill" data-val="Microsoft 365">Microsoft 365</button>
+        <button class="suite-pill" data-val="Google Workspace">Google Workspace</button>
+        <button class="suite-pill" data-val="Office local (sin suscripción)">Office local</button>
+        <button class="suite-pill" data-val="Mixto (ambas)">Mixto</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>¿Tienen tenant Microsoft 365 activo?</label>
+        <select id="a-tenant"><option value="">Seleccionar</option><option>Sí</option><option>No</option><option>No sé qué es eso</option></select>
+      </div>
+      <div class="field"><label>¿Usan SharePoint?</label>
+        <select id="a-sharepoint"><option value="">Seleccionar</option><option>Sí</option><option>No</option><option>No sé qué es eso</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEC B -->
+  <div class="sec" id="sec-1">
+    <div class="sec-lbl">B · 5 procedimientos financieros medulares</div>
+    <p style="font-size:13px;color:#64748B;margin-bottom:16px;">Identifica los 5 procesos que más tiempo consumen. Ejemplos: cierre mensual, conciliación bancaria, reporte gerencial, declaración de IVA, cuentas por cobrar.</p>
+    <div class="proc-wrap">
+      <table class="proc-table">
+        <thead><tr>
+          <th style="width:28px">#</th>
+          <th style="min-width:130px">Procedimiento</th>
+          <th style="min-width:100px">¿Quién lo hace?</th>
+          <th style="min-width:52px">Pasos</th>
+          <th style="min-width:80px">Tiempo/ciclo</th>
+          <th style="min-width:90px">Frecuencia</th>
+          <th style="min-width:110px">Herramienta</th>
+          <th style="min-width:130px">Principal dolor</th>
+        </tr></thead>
+        <tbody id="proc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SEC C -->
+  <div class="sec" id="sec-2">
+    <div class="sec-lbl">C · Índice de digitalización actual (1 = totalmente manual · 5 = totalmente automatizado)</div>
+    <div class="idx-grid" id="idx-grid"></div>
+  </div>
+
+  <!-- SEC D -->
+  <div class="sec" id="sec-3">
+    <div class="sec-lbl">D · Uso actual de inteligencia artificial</div>
+    <div class="row2">
+      <div class="field"><label>¿Alguien en el área usa alguna IA hoy?</label>
+        <select id="d-usa"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select>
+      </div>
+      <div class="field" id="d-cual-wrap"><label>Si respondió Sí, ¿cuál herramienta?</label>
+        <input type="text" id="d-cual" placeholder="Ej. ChatGPT, Gemini, Claude...">
+      </div>
+    </div>
+    <div class="field"><label>¿Para qué la usa?</label>
+      <textarea id="d-para" placeholder="Ej. redactar correos, resumir documentos..."></textarea>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Frecuencia de uso</label>
+        <select id="d-freq"><option value="">Seleccionar</option><option>Diario</option><option>Semanal</option><option>Ocasional</option><option>No aplica</option></select>
+      </div>
+      <div class="field"><label>¿Han tenido alguna experiencia negativa con IA?</label>
+        <select id="d-neg"><option value="">Seleccionar</option><option>Sí</option><option>No</option></select>
+      </div>
+    </div>
+    <div class="field" id="d-negdet-wrap"><label>¿Cuál fue la experiencia negativa?</label>
+      <textarea id="d-negdet" placeholder="Describa brevemente..."></textarea>
+    </div>
+  </div>
+
+  <!-- SEC E -->
+  <div class="sec" id="sec-4">
+    <div class="sec-lbl">E · Prioridades de transformación (selecciona las 3 más urgentes)</div>
+    <div class="prior-grid" id="prior-grid"></div>
+    <div class="alert-max" id="alert-max">⚠ Selecciona máximo 3 prioridades</div>
+    <div class="field" style="margin-top:20px;">
+      <label>¿Cuál es el procedimiento que más te gustaría transformar primero y por qué?</label>
+      <textarea id="e-libre" placeholder="Respuesta libre..." style="min-height:90px;"></textarea>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="sec" id="sec-5">
+    <div class="sec-lbl">Resumen del diagnóstico</div>
+    <div id="result-body"></div>
+    <button class="btn-send" id="btn-send" onclick="enviarAlSheet()">
+      <i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"
+    </button>
+    <button class="btn-print" onclick="window.print()">
+      <i class="ti ti-printer" style="font-size:14px;"></i> Imprimir / Guardar como PDF
+    </button>
+    <button class="btn-reset" onclick="reiniciar()">
+      <i class="ti ti-refresh" style="font-size:14px;"></i> Nuevo diagnóstico
+    </button>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav" id="nav-bar">
+    <div class="step-dots" id="step-dots"></div>
+    <div class="nav-btns">
+      <button class="btn" id="btn-prev" onclick="navSec(-1)" disabled>← Atrás</button>
+      <button class="btn primary" id="btn-next" onclick="navSec(1)">Siguiente →</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────
+// La URL se guarda en localStorage para no tener que ingresarla cada vez
+let SCRIPT_URL = localStorage.getItem('diagnostico_script_url') || '';
+
+const TOTAL = 5;
+let cur = 0;
+let suiteVal = '';
+const idxVals = {};
+const priorSel = new Set();
+
+const IDX_AREAS = [
+  'Facturación y cobros',
+  'Registro contable',
+  'Conciliaciones bancarias',
+  'Reportes gerenciales',
+  'Presupuesto y forecast',
+  'Almacenamiento y archivo',
+  'Comunicación financiera interna'
+];
+
+const PRIOR_OPTS = [
+  'Datos financieros organizados en la nube',
+  'Cumplimiento con facturación digital y ERP',
+  'Cerrar libros más rápido cada mes',
+  'Reportes gerenciales sin depender de una persona',
+  'Automatizar conciliaciones y declaraciones',
+  'Tablero financiero en tiempo real',
+  'Usar IA para analizar y proyectar números',
+  'Capacitar al equipo en herramientas digitales'
+];
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  // Mostrar URL guardada si existe
+  if (SCRIPT_URL) {
+    document.getElementById('script-url').value = SCRIPT_URL;
+  }
+  buildProcTable();
+  buildIdxGrid();
+  buildPriorGrid();
+  buildDots();
+}
+
+function guardarURL(val) {
+  SCRIPT_URL = val.trim();
+  localStorage.setItem('diagnostico_script_url', SCRIPT_URL);
+}
+
+// ── BUILD SECTIONS ────────────────────────────────────────────────
+function buildProcTable() {
+  const tb = document.getElementById('proc-tbody');
+  tb.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    tb.innerHTML += `<tr>
+      <td><span class="proc-num">${i}</span></td>
+      <td><input type="text" id="proc-nom-${i}" placeholder="Nombre"></td>
+      <td><input type="text" id="proc-quien-${i}" placeholder="Cargo/área"></td>
+      <td><input type="number" id="proc-pasos-${i}" placeholder="N°" min="1" style="width:48px;"></td>
+      <td><input type="text" id="proc-tiempo-${i}" placeholder="Ej. 2 días"></td>
+      <td><select id="proc-freq-${i}">
+        <option value="">—</option>
+        <option>Diario</option><option>Semanal</option>
+        <option>Quincenal</option><option>Mensual</option><option>Trimestral</option>
+      </select></td>
+      <td><input type="text" id="proc-herr-${i}" placeholder="Ej. Excel"></td>
+      <td><input type="text" id="proc-dolor-${i}" placeholder="Cuello de botella"></td>
+    </tr>`;
+  }
+}
+
+function buildIdxGrid() {
+  const g = document.getElementById('idx-grid');
+  g.innerHTML = '';
+  IDX_AREAS.forEach(area => {
+    idxVals[area] = 0;
+    const key = area.replace(/\s/g,'_');
+    const btns = [1,2,3,4,5].map(n =>
+      `<button class="idx-btn" data-area="${area}" data-val="${n}" onclick="setIdx('${area}',${n})">${n}</button>`
+    ).join('');
+    g.innerHTML += `<div class="idx-row">
+      <span class="idx-label">${area}</span>
+      <div class="idx-scale">${btns}</div>
+      <span class="idx-val" id="idxv-${key}">—</span>
+    </div>`;
+  });
+}
+
+function setIdx(area, val) {
+  idxVals[area] = val;
+  document.querySelectorAll(`.idx-btn[data-area="${area}"]`).forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val) === val);
+  });
+  document.getElementById('idxv-' + area.replace(/\s/g,'_')).textContent = val + '/5';
+}
+
+function buildPriorGrid() {
+  const g = document.getElementById('prior-grid');
+  g.innerHTML = '';
+  PRIOR_OPTS.forEach(p => {
+    g.innerHTML += `<div class="prior-item" onclick="togglePrior(this,'${p}')">
+      <div class="prior-check">
+        <svg class="prior-chk-svg" width="9" height="7" viewBox="0 0 9 7" fill="none">
+          <polyline points="1,3.5 3.5,6 8,1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="prior-text">${p}</span>
+    </div>`;
+  });
+}
+
+function togglePrior(el, val) {
+  if (priorSel.has(val)) {
+    priorSel.delete(val); el.classList.remove('active');
+  } else {
+    if (priorSel.size >= 3) {
+      const a = document.getElementById('alert-max');
+      a.classList.add('show');
+      setTimeout(() => a.classList.remove('show'), 2200);
+      return;
+    }
+    priorSel.add(val); el.classList.add('active');
+  }
+}
+
+// ── NAV ───────────────────────────────────────────────────────────
+function buildDots() {
+  const d = document.getElementById('step-dots');
+  d.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    d.innerHTML += `<div class="step-dot${i===cur?' active':''}"></div>`;
+  }
+}
+
+function navSec(dir) {
+  if (cur + dir < 0) return;
+  if (cur + dir === TOTAL) {
+    buildResult();
+    showSec(TOTAL);
+    document.getElementById('nav-bar').style.display = 'none';
+    return;
+  }
+  cur += dir;
+  showSec(cur);
+}
+
+function showSec(idx) {
+  document.querySelectorAll('.sec').forEach((s,i) => s.classList.toggle('active', i === idx));
+  const pct = Math.round(((idx + 1) / (TOTAL + 1)) * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('sec-counter').textContent =
+    idx < TOTAL ? `Sección ${idx+1} de ${TOTAL}` : 'Resumen';
+  if (idx < TOTAL) {
+    cur = idx;
+    buildDots();
+    document.getElementById('btn-prev').disabled = idx === 0;
+    document.getElementById('btn-next').textContent =
+      idx === TOTAL - 1 ? 'Ver resumen →' : 'Siguiente →';
+  }
+}
+
+// ── RESULT ────────────────────────────────────────────────────────
+function avgIdx() {
+  const vals = Object.values(idxVals).filter(v => v > 0);
+  if (!vals.length) return null;
+  return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+}
+
+function buildResult() {
+  const rb = document.getElementById('result-body');
+  let procRows = '';
+  for (let i=1;i<=5;i++) {
+    const nom = document.getElementById('proc-nom-'+i).value;
+    if (!nom) continue;
+    procRows += `<tr>
+      <td style="padding:5px 6px;border-bottom:1px solid #F1F5F9;font-weight:500">${nom}</td>
+      <td style="padding:5px 6px;border-bottom:1px solid #F1F5F9;text-align:center">${document.getElementById('proc-pasos-'+i).value||'—'}</td>
+      <td style="padding:5px 6px;border-bottom:1px solid #F1F5F9">${document.getElementById('proc-tiempo-'+i).value||'—'}</td>
+      <td style="padding:5px 6px;border-bottom:1px solid #F1F5F9">${document.getElementById('proc-freq-'+i).value||'—'}</td>
+      <td style="padding:5px 6px;border-bottom:1px solid #F1F5F9;color:#64748B">${document.getElementById('proc-dolor-'+i).value||'—'}</td>
+    </tr>`;
+  }
+  let idxHTML = '';
+  IDX_AREAS.forEach(a => {
+    const v = idxVals[a] || 0;
+    idxHTML += `<div class="score-row">
+      <span class="score-lbl">${a}</span>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${v*20}%"></div></div>
+      <span class="score-num">${v||'—'}/5</span>
+    </div>`;
+  });
+
+  rb.innerHTML = `
+    <div class="r-card">
+      <h3><i class="ti ti-building"></i>${document.getElementById('a-nombre').value || 'Cámara'}</h3>
+      <table class="r-table">
+        <tr><td>Sector</td><td>${document.getElementById('a-sector').value||'—'}</td></tr>
+        <tr><td>Agremiados</td><td>${document.getElementById('a-asociados').value||'—'}</td></tr>
+        <tr><td>Equipo financiero</td><td>${document.getElementById('a-personas').value||'—'} personas</td></tr>
+        <tr><td>ERP actual</td><td>${document.getElementById('a-erp').value||'Ninguno'}</td></tr>
+        <tr><td>Suite ofimática</td><td>${suiteVal||'—'}</td></tr>
+        <tr><td>Tenant M365 activo</td><td>${document.getElementById('a-tenant').value||'—'}</td></tr>
+        <tr><td>Usa SharePoint</td><td>${document.getElementById('a-sharepoint').value||'—'}</td></tr>
+      </table>
+    </div>
+    <div class="r-card">
+      <h3><i class="ti ti-list-numbers"></i>Procedimientos medulares</h3>
+      ${procRows ? `<table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <tr style="font-size:11px;color:#94A3B8;border-bottom:1px solid #E2E8F0;">
+          <td style="padding:4px 6px">Procedimiento</td>
+          <td style="padding:4px 6px;text-align:center">Pasos</td>
+          <td style="padding:4px 6px">Tiempo/ciclo</td>
+          <td style="padding:4px 6px">Frecuencia</td>
+          <td style="padding:4px 6px">Principal dolor</td>
+        </tr>${procRows}</table>` :
+        '<p style="font-size:13px;color:#94A3B8">No se registraron procedimientos.</p>'}
+    </div>
+    <div class="r-card">
+      <h3><i class="ti ti-chart-bar"></i>Índice de digitalización
+        <span class="badge-avg">Promedio: ${avgIdx()||'—'}/5</span>
+      </h3>
+      ${idxHTML}
+    </div>
+    <div class="r-card">
+      <h3><i class="ti ti-robot"></i>IA y prioridades de transformación</h3>
+      <table class="r-table">
+        <tr><td>Usa IA hoy</td><td>${document.getElementById('d-usa').value||'—'}</td></tr>
+        <tr><td>Herramienta</td><td>${document.getElementById('d-cual').value||'—'}</td></tr>
+        <tr><td>Frecuencia</td><td>${document.getElementById('d-freq').value||'—'}</td></tr>
+        <tr><td>Exp. negativa</td><td>${document.getElementById('d-neg').value||'—'}</td></tr>
+        <tr><td>Top 3 prioridades</td><td>${priorSel.size?[...priorSel].map((p,i)=>`${i+1}. ${p}`).join('<br>'):'—'}</td></tr>
+        <tr><td>Transformación prioritaria</td><td>${document.getElementById('e-libre').value||'—'}</td></tr>
+      </table>
+    </div>`;
+}
+
+// ── ENVIAR AL SHEET ───────────────────────────────────────────────
+function recopilarDatos() {
+  const procs = [];
+  for (let i=1;i<=5;i++) {
+    procs.push({
+      nombre:      document.getElementById('proc-nom-'+i).value,
+      pasos:       document.getElementById('proc-pasos-'+i).value,
+      tiempo:      document.getElementById('proc-tiempo-'+i).value,
+      frecuencia:  document.getElementById('proc-freq-'+i).value,
+      herramienta: document.getElementById('proc-herr-'+i).value,
+      dolor:       document.getElementById('proc-dolor-'+i).value
+    });
+  }
+  return {
+    camara:            document.getElementById('a-nombre').value,
+    sector:            document.getElementById('a-sector').value,
+    asociados:         document.getElementById('a-asociados').value,
+    personas:          document.getElementById('a-personas').value,
+    erp:               document.getElementById('a-erp').value,
+    suite:             suiteVal,
+    tenant:            document.getElementById('a-tenant').value,
+    sharepoint:        document.getElementById('a-sharepoint').value,
+    procedimientos:    procs,
+    indice:            { ...idxVals },
+    usaIA:             document.getElementById('d-usa').value,
+    herramientaIA:     document.getElementById('d-cual').value,
+    paraQueIA:         document.getElementById('d-para').value,
+    frecuenciaIA:      document.getElementById('d-freq').value,
+    expNegativa:       document.getElementById('d-neg').value,
+    detalleNeg:        document.getElementById('d-negdet').value,
+    prioridades:       [...priorSel],
+    transformacionLibre: document.getElementById('e-libre').value
+  };
+}
+
+async function enviarAlSheet() {
+  if (!SCRIPT_URL) {
+    showToast('⚠ Primero pega la URL de tu Apps Script en el banner de arriba', 'error');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Enviando...';
+  try {
+    const datos = recopilarDatos();
+    // Apps Script requiere no-cors porque viene de un HTML local
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
+    });
+    // no-cors no devuelve respuesta legible — si no lanzó error, asumimos éxito
+    showToast('✓ Diagnóstico enviado al Sheet correctamente', 'success');
+    btn.innerHTML = '<i class="ti ti-check"></i> ¡Enviado correctamente!';
+    btn.style.background = '#065F46';
+  } catch (err) {
+    showToast('Error al enviar. Revisa la URL del script.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"';
+  }
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ── RESET ─────────────────────────────────────────────────────────
+function reiniciar() {
+  cur = 0; suiteVal = '';
+  priorSel.clear();
+  Object.keys(idxVals).forEach(k => idxVals[k] = 0);
+  document.querySelectorAll('.suite-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.idx-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.idx-val').forEach(v=>v.textContent='—');
+  document.querySelectorAll('.prior-item').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(el.id !== 'script-url') el.value='';
+  });
+  const btn = document.getElementById('btn-send');
+  btn.disabled = false;
+  btn.style.background = '';
+  btn.innerHTML = '<i class="ti ti-brand-google-drive"></i> Enviar a Google Sheet "Madurez Digital Cámaras"';
+  buildProcTable(); buildIdxGrid(); buildPriorGrid();
+  showSec(0);
+  document.getElementById('nav-bar').style.display = 'flex';
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────
+document.getElementById('suite-pills').addEventListener('click', e => {
+  const pill = e.target.closest('.suite-pill');
+  if (!pill) return;
+  document.querySelectorAll('.suite-pill').forEach(p=>p.classList.remove('active'));
+  pill.classList.add('active');
+  suiteVal = pill.dataset.val;
+});
+document.getElementById('d-usa').addEventListener('change', function() {
+  document.getElementById('d-cual-wrap').style.opacity = this.value==='Sí'?'1':'0.5';
+});
+document.getElementById('d-neg').addEventListener('change', function() {
+  document.getElementById('d-negdet-wrap').style.opacity = this.value==='Sí'?'1':'0.5';
+});
+
+init();
+</script>
+</body>
+</html>
