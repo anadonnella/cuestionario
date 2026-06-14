@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Resultados Diagnóstico Financiero Digital</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #F0F4F8; color: #0D1F3C; padding: 24px;
+}
+.header {
+  background: #0D1F3C; color: #fff; border-radius: 14px;
+  padding: 20px 28px; margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left .logo { font-size: 20px; font-weight: 900; }
+.header-left .logo em { color: #F0A500; font-style: normal; }
+.header-left .sub { font-size: 11px; color: #90A4C0; margin-top: 2px; }
+.header-right { text-align: right; }
+.header-right .title { font-size: 16px; font-weight: 700; color: #fff; }
+.header-right .sub2 { font-size: 11px; color: #90A4C0; margin-top: 2px; }
+
+.gold-strip {
+  background: #F0A500; border-radius: 8px;
+  padding: 8px 20px; margin-bottom: 20px;
+  font-size: 11px; font-weight: 700; color: #0D1F3C;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* KPI CARDS */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.kpi {
+  background: #fff; border-radius: 12px; padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.kpi .label { font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi .value { font-size: 32px; font-weight: 900; color: #0D1F3C; line-height: 1; }
+.kpi .unit { font-size: 13px; color: #94A3B8; margin-top: 4px; }
+.kpi .badge {
+  display: inline-block; margin-top: 6px;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-warn { background: #FEF3C7; color: #92400E; }
+.badge-ok { background: #D1FAE5; color: #065F46; }
+.badge-info { background: #E6F1FB; color: #1565C0; }
+
+/* CHARTS GRID */
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.charts-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-card {
+  background: #fff; border-radius: 12px; padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.chart-card.full { grid-column: 1 / -1; }
+.chart-title { font-size: 13px; font-weight: 700; color: #0D1F3C; margin-bottom: 4px; }
+.chart-sub { font-size: 11px; color: #94A3B8; margin-bottom: 16px; }
+.chart-wrap { position: relative; }
+
+/* SHEET LINK */
+.sheet-link {
+  background: #fff; border-radius: 12px; padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sheet-link .sl-left { font-size: 13px; color: #475569; }
+.sheet-link .sl-left strong { color: #0D1F3C; display: block; font-size: 14px; margin-bottom: 2px; }
+.btn-sheet {
+  padding: 8px 18px; background: #1565C0; color: #fff;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none; display: inline-block;
+}
+.btn-sheet:hover { background: #1251A0; }
+
+.footer-note {
+  text-align: center; font-size: 11px; color: #94A3B8;
+  margin-top: 16px; padding-bottom: 8px;
+}
+
+/* Loading state */
+.loading {
+  text-align: center; padding: 60px 20px;
+  font-size: 14px; color: #64748B;
+}
+
+@media (max-width: 700px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .charts { grid-template-columns: 1fr; }
+  .charts-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo"><em>CA</em>VEDATOS · Bida Global</div>
+    <div class="sub">Programa de Finanzas Digitales para Cámaras</div>
+  </div>
+  <div class="header-right">
+    <div class="title">Dashboard de Resultados</div>
+    <div class="sub2">Diagnóstico de Madurez Digital — Resultados agregados</div>
+  </div>
+</div>
+
+<div class="gold-strip">
+  <span>📊 Resultados agregados — los nombres de las cámaras no se muestran</span>
+  <span id="last-update">Actualizando...</span>
+</div>
+
+<!-- KPIs -->
+<div class="kpis">
+  <div class="kpi">
+    <div class="label">Cámaras diagnosticadas</div>
+    <div class="value" id="kpi-total">—</div>
+    <div class="unit">diagnósticos recibidos</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Índice digital promedio</div>
+    <div class="value" id="kpi-idx">—</div>
+    <div class="unit">sobre 5.0 puntos</div>
+    <span class="badge badge-warn" id="kpi-idx-badge">Calculando...</span>
+  </div>
+  <div class="kpi">
+    <div class="label">Usan IA actualmente</div>
+    <div class="value" id="kpi-ia">—</div>
+    <div class="unit">del total de cámaras</div>
+    <span class="badge badge-info" id="kpi-ia-badge"></span>
+  </div>
+  <div class="kpi">
+    <div class="label">Suite más usada</div>
+    <div class="value" id="kpi-suite" style="font-size:18px;margin-top:4px;">—</div>
+    <div class="unit">plataforma dominante</div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="charts">
+  <div class="chart-card">
+    <div class="chart-title">Índice de digitalización por área</div>
+    <div class="chart-sub">Promedio 1–5 · todas las cámaras</div>
+    <div class="chart-wrap"><canvas id="chart-idx" height="220"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Prioridades de transformación</div>
+    <div class="chart-sub">Veces seleccionada entre el top 3</div>
+    <div class="chart-wrap"><canvas id="chart-prior" height="220"></canvas></div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 2 -->
+<div class="charts-3">
+  <div class="chart-card">
+    <div class="chart-title">Suite ofimática</div>
+    <div class="chart-sub">Distribución de plataformas</div>
+    <div class="chart-wrap"><canvas id="chart-suite" height="180"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Uso de IA hoy</div>
+    <div class="chart-sub">¿Alguien en el área usa IA?</div>
+    <div class="chart-wrap"><canvas id="chart-ia" height="180"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">ERP actual</div>
+    <div class="chart-sub">Software administrativo en uso</div>
+    <div class="chart-wrap"><canvas id="chart-erp" height="180"></canvas></div>
+  </div>
+</div>
+
+<!-- PROCEDIMIENTOS -->
+<div class="charts">
+  <div class="chart-card full">
+    <div class="chart-title">Procedimientos medulares más frecuentes</div>
+    <div class="chart-sub">Top procedimientos mencionados por las cámaras</div>
+    <div class="chart-wrap"><canvas id="chart-procs" height="120"></canvas></div>
+  </div>
+</div>
+
+<!-- SHEET LINK -->
+<div class="sheet-link">
+  <div class="sl-left">
+    <strong>Ver datos completos en Google Sheets</strong>
+    Los nombres de las cámaras y el detalle completo están disponibles solo en el Sheet original
+  </div>
+  <a class="btn-sheet" href="https://docs.google.com/spreadsheets/d/13DUnjQz2yJCIEycuc_pSR2jG44_yo22MqjrJbwdxuRg/edit" target="_blank">
+    Abrir Sheet →
+  </a>
+</div>
+
+<div class="footer-note">
+  Dashboard de resultados agregados · Programa de Finanzas Digitales para Cámaras · Cavedatos / Bida Global
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxazQ3QSkcwpm3V4fNJYdMp_IHNo4nGB6NIu5HAC8pt9iL-v0NxGKS_bPoyTEvXRTZ2sQ/exec';
+
+const NAVY  = '#0D1F3C';
+const BLUE  = '#1565C0';
+const GOLD  = '#F0A500';
+const GREEN = '#10B981';
+const GRAY  = '#94A3B8';
+
+const IDX_AREAS = [
+  'Facturación y cobros',
+  'Registro contable',
+  'Conciliaciones bancarias',
+  'Reportes gerenciales',
+  'Presupuesto y forecast',
+  'Almacenamiento y archivo',
+  'Comunicación financiera interna'
+];
+
+const PRIOR_OPTS = [
+  'Datos financieros organizados en la nube',
+  'Cumplimiento con facturación digital y ERP',
+  'Cerrar libros más rápido cada mes',
+  'Reportes gerenciales sin depender de una persona',
+  'Automatizar conciliaciones y declaraciones',
+  'Tablero financiero en tiempo real',
+  'Usar IA para analizar y proyectar números',
+  'Capacitar al equipo en herramientas digitales'
+];
+
+// ── Fetch data from Apps Script ───────────────────────────────────
+async function fetchData() {
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=dashboard', { mode: 'cors' });
+    const json = await res.json();
+    return json.rows || [];
+  } catch(e) {
+    // If CORS fails, use sample data for demo
+    return getSampleData();
+  }
+}
+
+// ── Sample data for when sheet has real responses ─────────────────
+function getSampleData() {
+  // This mirrors the actual sheet structure
+  // Col indexes (0-based): 0=fecha, 1=camara, 2=sector, 3=agremiados, 4=personas,
+  // 5=erp, 6=suite, 7=tenant, 8=sharepoint,
+  // 9-38=procs (5x6), 39-45=idx areas, 46=idx prom,
+  // 47=usaIA, 48=herramientaIA, 49=paraQue, 50=freq,
+  // 51=expNeg, 52=detalle, 53=prioridades, 54=libre, 55=resumen
+  return [];
+}
+
+// ── Parse sheet rows (CSV-like array of arrays) ───────────────────
+function parseRows(rows) {
+  if (!rows || rows.length < 2) return null;
+  const headers = rows[0];
+  const data = rows.slice(1);
+
+  const records = data.map(row => ({
+    suite:      row[6]  || '',
+    erp:        row[5]  || '',
+    usaIA:      row[47] || '',
+    idxProm:    parseFloat(row[46]) || 0,
+    idxAreas: {
+      'Facturación y cobros':            parseFloat(row[39]) || 0,
+      'Registro contable':               parseFloat(row[40]) || 0,
+      'Conciliaciones bancarias':        parseFloat(row[41]) || 0,
+      'Reportes gerenciales':            parseFloat(row[42]) || 0,
+      'Presupuesto y forecast':          parseFloat(row[43]) || 0,
+      'Almacenamiento y archivo':        parseFloat(row[44]) || 0,
+      'Comunicación financiera interna': parseFloat(row[45]) || 0,
+    },
+    prioridades: (row[53] || '').split(' | ').map(p=>p.trim()).filter(Boolean),
+    procs: [row[9], row[15], row[21], row[27], row[33]].filter(Boolean)
+  }));
+
+  return records;
+}
+
+// ── Aggregate ─────────────────────────────────────────────────────
+function aggregate(records) {
+  const n = records.length;
+  if (n === 0) return null;
+
+  // IDX promedio por área
+  const idxByArea = {};
+  IDX_AREAS.forEach(a => {
+    const vals = records.map(r => r.idxAreas[a]).filter(v => v > 0);
+    idxByArea[a] = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+  });
+
+  // IDX general
+  const allIdx = records.map(r => r.idxProm).filter(v => v > 0);
+  const idxGeneral = allIdx.length ? (allIdx.reduce((a,b)=>a+b,0)/allIdx.length).toFixed(1) : 0;
+
+  // Suites
+  const suiteCount = {};
+  records.forEach(r => {
+    const s = r.suite || 'No especificado';
+    suiteCount[s] = (suiteCount[s] || 0) + 1;
+  });
+
+  // ERP
+  const erpCount = {};
+  records.forEach(r => {
+    const e = (r.erp || 'Ninguno').toLowerCase().trim() || 'ninguno';
+    const key = e.charAt(0).toUpperCase() + e.slice(1);
+    erpCount[key] = (erpCount[key] || 0) + 1;
+  });
+
+  // IA
+  const iaCount = { 'Sí': 0, 'No': 0 };
+  records.forEach(r => {
+    const v = r.usaIA === 'Sí' ? 'Sí' : 'No';
+    iaCount[v]++;
+  });
+
+  // Prioridades
+  const priorCount = {};
+  records.forEach(r => {
+    r.prioridades.forEach(p => {
+      if (p) priorCount[p] = (priorCount[p] || 0) + 1;
+    });
+  });
+
+  // Procedimientos
+  const procCount = {};
+  records.forEach(r => {
+    r.procs.forEach(p => {
+      if (p) {
+        const key = p.toLowerCase().trim();
+        procCount[key] = (procCount[key] || 0) + 1;
+      }
+    });
+  });
+
+  // Top suite
+  const topSuite = Object.entries(suiteCount).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+
+  return { n, idxByArea, idxGeneral, suiteCount, erpCount, iaCount, priorCount, procCount, topSuite };
+}
+
+// ── Render KPIs ───────────────────────────────────────────────────
+function renderKPIs(agg) {
+  document.getElementById('kpi-total').textContent = agg.n;
+  document.getElementById('kpi-idx').textContent = agg.idxGeneral;
+
+  const idx = parseFloat(agg.idxGeneral);
+  const idxBadge = document.getElementById('kpi-idx-badge');
+  if (idx < 2) { idxBadge.textContent = 'Nivel inicial'; idxBadge.className = 'badge badge-warn'; }
+  else if (idx < 3.5) { idxBadge.textContent = 'Nivel básico'; idxBadge.className = 'badge badge-info'; }
+  else { idxBadge.textContent = 'Nivel competente'; idxBadge.className = 'badge badge-ok'; }
+
+  const pctIA = Math.round((agg.iaCount['Sí'] / agg.n) * 100);
+  document.getElementById('kpi-ia').textContent = pctIA + '%';
+  document.getElementById('kpi-ia-badge').textContent = agg.iaCount['Sí'] + ' de ' + agg.n + ' cámaras';
+
+  document.getElementById('kpi-suite').textContent = agg.topSuite.replace(' (sin suscripción)', '');
+}
+
+// ── Charts ────────────────────────────────────────────────────────
+const charts = {};
+
+function renderIdxChart(agg) {
+  const ctx = document.getElementById('chart-idx').getContext('2d');
+  if (charts.idx) charts.idx.destroy();
+  charts.idx = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: IDX_AREAS.map(a => a.length > 18 ? a.substring(0,18)+'…' : a),
+      datasets: [{
+        label: 'Promedio (1-5)',
+        data: IDX_AREAS.map(a => agg.idxByArea[a]?.toFixed(1) || 0),
+        backgroundColor: IDX_AREAS.map(v => {
+          const val = agg.idxByArea[v] || 0;
+          if (val < 2) return '#FCA5A5';
+          if (val < 3.5) return '#93C5FD';
+          return '#6EE7B7';
+        }),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { min: 0, max: 5, grid: { color: '#F1F5F9' },
+          ticks: { font: { size: 11 } } },
+        y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderPriorChart(agg) {
+  const sorted = Object.entries(agg.priorCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const ctx = document.getElementById('chart-prior').getContext('2d');
+  if (charts.prior) charts.prior.destroy();
+  charts.prior = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k]) => k.length > 25 ? k.substring(0,25)+'…' : k),
+      datasets: [{
+        data: sorted.map(([,v]) => v),
+        backgroundColor: NAVY,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#F1F5F9' }, ticks: { stepSize: 1, font: { size: 11 } } },
+        y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderSuiteChart(agg) {
+  const entries = Object.entries(agg.suiteCount);
+  const ctx = document.getElementById('chart-suite').getContext('2d');
+  if (charts.suite) charts.suite.destroy();
+  charts.suite = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(([k]) => k.replace(' (sin suscripción)', '')),
+      datasets: [{ data: entries.map(([,v]) => v),
+        backgroundColor: [NAVY, BLUE, GOLD, GREEN, GRAY],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } }
+      }
+    }
+  });
+}
+
+function renderIAChart(agg) {
+  const ctx = document.getElementById('chart-ia').getContext('2d');
+  if (charts.ia) charts.ia.destroy();
+  charts.ia = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Sí usa IA', 'No usa IA'],
+      datasets: [{ data: [agg.iaCount['Sí'], agg.iaCount['No']],
+        backgroundColor: [GREEN, '#E2E8F0'],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } }
+      }
+    }
+  });
+}
+
+function renderERPChart(agg) {
+  const entries = Object.entries(agg.erpCount).sort((a,b)=>b[1]-a[1]);
+  const ctx = document.getElementById('chart-erp').getContext('2d');
+  if (charts.erp) charts.erp.destroy();
+  charts.erp = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(([k]) => k),
+      datasets: [{ data: entries.map(([,v]) => v),
+        backgroundColor: [BLUE, NAVY, GOLD, GREEN, GRAY, '#F87171'],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } }
+      }
+    }
+  });
+}
+
+function renderProcsChart(agg) {
+  const sorted = Object.entries(agg.procCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const ctx = document.getElementById('chart-procs').getContext('2d');
+  if (charts.procs) charts.procs.destroy();
+  charts.procs = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k]) => k.charAt(0).toUpperCase() + k.slice(1)),
+      datasets: [{
+        data: sorted.map(([,v]) => v),
+        backgroundColor: BLUE,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#F1F5F9' } }
+      }
+    }
+  });
+}
+
+// ── Show empty state ──────────────────────────────────────────────
+function showEmpty() {
+  document.getElementById('kpi-total').textContent = '0';
+  document.getElementById('kpi-idx').textContent = '—';
+  document.getElementById('kpi-idx-badge').textContent = 'Sin datos aún';
+  document.getElementById('kpi-ia').textContent = '—';
+  document.getElementById('kpi-suite').textContent = '—';
+  document.getElementById('last-update').textContent = 'Sin respuestas aún';
+
+  // Render empty charts with placeholder
+  ['chart-idx','chart-prior','chart-suite','chart-ia','chart-erp','chart-procs'].forEach(id => {
+    const ctx = document.getElementById(id).getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: { labels: ['Sin datos'], datasets: [{ data: [0], backgroundColor: '#E2E8F0' }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false },
+          title: { display: true, text: 'Esperando respuestas...', color: '#94A3B8', font: { size: 12 } }
+        },
+        scales: { x: { display: false }, y: { display: false } }
+      }
+    });
+  });
+}
+
+// ── Main ──────────────────────────────────────────────────────────
+async function main() {
+  document.getElementById('last-update').textContent = 'Cargando...';
+
+  try {
+    const rows = await fetchData();
+
+    if (!rows || rows.length < 2) {
+      showEmpty();
+      return;
+    }
+
+    const records = parseRows(rows);
+    if (!records || records.length === 0) { showEmpty(); return; }
+
+    const agg = aggregate(records);
+    if (!agg) { showEmpty(); return; }
+
+    renderKPIs(agg);
+    renderIdxChart(agg);
+    renderPriorChart(agg);
+    renderSuiteChart(agg);
+    renderIAChart(agg);
+    renderERPChart(agg);
+    renderProcsChart(agg);
+
+    const now = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+    document.getElementById('last-update').textContent = 'Actualizado: ' + now;
+
+  } catch(e) {
+    showEmpty();
+  }
+}
+
+main();
+// Auto-refresh every 5 minutes
+setInterval(main, 5 * 60 * 1000);
+</script>
+</body>
+</html>
